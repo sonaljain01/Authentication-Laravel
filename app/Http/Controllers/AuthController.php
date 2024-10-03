@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Session;
 use validator;
+use App\Jobs\SendEmailJob;
 class AuthController extends Controller
 {
     public function index()
@@ -46,6 +47,14 @@ class AuthController extends Controller
             'password' => \Hash::make($request->password),
 
         ]);
+
+        $emailData = [
+            'email' => $request->email,
+            'subject' => 'Welcome to Our Platform',
+            'message' => 'Thank you for registering!'
+        ];
+
+        SendEmailJob::dispatch($emailData);
 
         // // login user 
         if (Auth::attempt($request->only('email', 'password'))) {
