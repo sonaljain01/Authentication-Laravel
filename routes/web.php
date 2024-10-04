@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\GalleryController;
 Route::get('/', function () {
     return view('welcome');
 });
@@ -18,4 +18,15 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth'], function () {
     Route::get('home', [AuthController::class, 'home'])->name('home');
     Route::get('logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('profile', [AuthController::class, 'profileView'])->name('profile.view');
+    Route::post('profile/update', [AuthController::class, 'updateProfile'])->name('profile.update');
+});
+
+Route::group(['middleware' => 'auth'], function () {
+    Route::get('gallery', [GalleryController::class, 'viewGallery'])->name('gallery.view');
+    Route::post('gallery/upload', [GalleryController::class, 'uploadImages'])->name('gallery.upload');
+    Route::delete('/gallery/{id}', [GalleryController::class, 'destroy'])->name('gallery.delete');
 });
