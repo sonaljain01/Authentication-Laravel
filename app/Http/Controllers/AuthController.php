@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Session;
 use validator;
 use App\Jobs\SendEmailJob;
+use Storage;
+use App\Models\GalleryImage;
 class AuthController extends Controller
 {
     public function index()
@@ -15,13 +17,35 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request){
+    public function profileview()
+    {
+        return view('auth.profile');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'profile_image' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+        ]);
+
+        $user = Auth::user();
+        if ($request->hasFile('profile_image')) {
+            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
+            $user->profile_image = $imagePath;
+            $user->save();
+        }
+
+        return redirect('home')->withSuccess('Profile updated successfully');
+    }
+
+    public function login(Request $request)
+    {
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
-         //login code
-         if(Auth::attempt($credentials)){
+        //login code
+        if (Auth::attempt($credentials)) {
             session()->put('custom_message', 'You have logged in successfully!');
             return redirect('home');
         }
@@ -32,7 +56,8 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request){
+    public function register(Request $request)
+    {
         // dd($request->all());
         $request->validate([
             'name' => 'required',
@@ -68,13 +93,18 @@ class AuthController extends Controller
         return redirect('register')->withError('Login Failed');
     }
 
-    public function home(){
+    public function home()
+    {
         return view('home');
     }
 
-    public function logout(){
+    public function logout()
+    {
         Session::flush();
         Auth::logout();
         return redirect('');
     }
+
+
+
 }
