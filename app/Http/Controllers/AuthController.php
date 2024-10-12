@@ -46,6 +46,16 @@ class AuthController extends Controller
         ]);
         //login code
         if (Auth::attempt($credentials)) {
+
+            $user = Auth::user();
+
+            // Check if the user's email is verified
+            if (!$user->hasVerifiedEmail()) {
+                // Log out the user and redirect them to the verification notice
+                Auth::logout();
+                return redirect()->route('verification.notice')->with('error', 'You need to verify your email address before logging in.');
+            }
+
             session()->put('custom_message', 'You have logged in successfully!');
             return redirect('home');
         }
@@ -73,6 +83,8 @@ class AuthController extends Controller
 
         ]);
 
+        $user->sendEmailVerificationNotification();
+
         $emailData = [
             'email' => $request->email,
             'subject' => 'Welcome to Our Platform',
@@ -81,16 +93,19 @@ class AuthController extends Controller
 
         SendEmailJob::dispatch($emailData);
 
-        // // login user 
-        if (Auth::attempt($request->only('email', 'password'))) {
-            // $request->session()->regenerate();
-            session()->put('custom_message', 'Welcome! Your account has been created successfully.');
+        Auth::logout();
 
-            Auth::login($user);
-            return redirect('home')->withSuccess('Registration successful. Logged in!');
-        }
+        return redirect('login')->withSuccess('Registration successful. Please check your email to verify your account.');
+    
+        // if (Auth::attempt($request->only('email', 'password'))) {
 
-        return redirect('register')->withError('Login Failed');
+        //     session()->put('custom_message', 'Welcome! Your account has been created successfully.');
+
+        //     Auth::login($user);
+        //     return redirect('home')->withSuccess('Registration successful. Logged in!');
+        // }
+
+        // return redirect('register')->withError('Login Failed');
     }
 
     public function home()
