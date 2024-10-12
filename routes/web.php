@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GalleryController;
+use Illuminate\Support\Facades\Auth;
+
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -30,3 +33,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('gallery/upload', [GalleryController::class, 'uploadImages'])->name('gallery.upload');
     Route::delete('/gallery/{id}', [GalleryController::class, 'destroy'])->name('gallery.delete');
 });
+
+
+// Auth::routes(['verify' => true]);
+// Route::get('/home', [AuthController::class, 'index'])->middleware(['auth', 'verified'])->name('home');
+Auth::routes(['verify' => true]);
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
